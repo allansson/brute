@@ -58,6 +58,18 @@ namespace Brute.Tests
         }
 
         [Fact]
+        public void WhenMultipleSourcesAreGiven_ShouldLoadTestGeneratorsFromAllSources()
+        {
+            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
+
+            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll", "Brute.AssemblyStubs.MultipleTestGenerators.dll" }, discoveryContext, logger, discoverySink);
+
+            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == SingleTestGenerator.TestCaseName));
+            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == FirstTestGenerator.TestCaseName));
+            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == SecondTestGenerator.TestCaseName));
+        }
+
+        [Fact]
         public void WhenTestCaseIsRegistered_ShouldBeRegisteredWithDisplayNameGivenInTest()
         {
             TestGeneratorAdapter adapter = new TestGeneratorAdapter();
@@ -95,6 +107,16 @@ namespace Brute.Tests
             adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll" }, discoveryContext, logger, discoverySink);
 
             discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(tc => tc.FullyQualifiedName == String.Format("{0}#{1}", typeof(SingleTestGenerator).FullName, SingleTestGenerator.TestCaseName.Replace(" ", ""))));
+        }
+
+        [Fact]
+        public void WhenSourceIsTheBruteLibrary_ShouldIgnoreITestGeneratorInterface()
+        {
+            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
+
+            adapter.DiscoverTests(new string[] { "Brute.VsTestAdapter.dll" }, discoveryContext, logger, discoverySink);
+
+            discoverySink.Received(0).SendTestCase(Arg.Any<TestCase>());
         }
     }
 }

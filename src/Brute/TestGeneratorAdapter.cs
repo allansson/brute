@@ -21,26 +21,32 @@ namespace Brute
 
         public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
         {
-            string source = sources.FirstOrDefault();
-
-            Assembly assembly = Assembly.LoadFrom(source);
-
-            IEnumerable<Type> testGeneratorTypes = assembly.GetTypes()
-                .Where(t => typeof(ITestGenerator).IsAssignableFrom(t));
-
-            foreach (Type testGeneratorType in testGeneratorTypes)
+            foreach (string source in sources)
             {
-                ITestGenerator testGenerator = Activator.CreateInstance(testGeneratorType) as ITestGenerator;
+                Assembly assembly = Assembly.LoadFrom(source);
 
-                Test test = testGenerator.Generate().FirstOrDefault();
+                IEnumerable<Type> testGeneratorTypes = assembly.GetTypes()
+                    .Where(TypeIsImplementationOfTestGeneratorInterface);
 
-                discoverySink.SendTestCase(new TestCase(String.Format("{0}#{1}", testGeneratorType.FullName, test.Name.Replace(" ", "")), ExecutorUri, source)
+                foreach (Type testGeneratorType in testGeneratorTypes)
                 {
-                    DisplayName = test.Name,
-                    LineNumber = test.LineNumber,
-                    CodeFilePath = test.SourceFile
-                });
+                    ITestGenerator testGenerator = Activator.CreateInstance(testGeneratorType) as ITestGenerator;
+
+                    Test test = testGenerator.Generate().FirstOrDefault();
+
+                    discoverySink.SendTestCase(new TestCase(String.Format("{0}#{1}", testGeneratorType.FullName, test.Name.Replace(" ", "")), ExecutorUri, source)
+                    {
+                        DisplayName = test.Name,
+                        LineNumber = test.LineNumber,
+                        CodeFilePath = test.SourceFile
+                    });
+                }
             }
+        }
+
+        private static bool TypeIsImplementationOfTestGeneratorInterface(Type type)
+        {
+            return !type.IsInterface && typeof(ITestGenerator).IsAssignableFrom(type);
         }
 
         public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)

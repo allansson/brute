@@ -114,7 +114,7 @@ namespace Brute.Tests
         {
             TestGeneratorAdapter adapter = new TestGeneratorAdapter();
 
-            adapter.DiscoverTests(new string[] { "Brute.VsTestAdapter.dll" }, discoveryContext, logger, discoverySink);
+            adapter.DiscoverTests(new string[] { "Brute.TestAdapter.dll" }, discoveryContext, logger, discoverySink);
 
             discoverySink.Received(0).SendTestCase(Arg.Any<TestCase>());
         }

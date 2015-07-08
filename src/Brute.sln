@@ -15,6 +15,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brute.AssemblyStubs.SingleT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brute.AssemblyStubs.MultipleTestGenerators", "AssemblyStubs\Brute.AssemblyStubs.MultipleTestGenerators\Brute.AssemblyStubs.MultipleTestGenerators.csproj", "{E925395C-0C85-4102-AEF4-F98B080023D6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FB278B80-5168-42D3-9559-4208D9A5E5DC}"
+	ProjectSection(SolutionItems) = preProject
+		NuGet.config = NuGet.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

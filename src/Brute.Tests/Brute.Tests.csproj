@@ -8,7 +8,7 @@
     <ProjectGuid>{E19F05D7-C065-44B5-A8A3-668A271A837F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Brute.Tests</RootNamespace>
+    <RootNamespace>Brute</RootNamespace>
     <AssemblyName>Brute.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -39,6 +39,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel">
+      <HintPath>$(MSBuildProgramFiles32)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\CommonExtensions\Microsoft\TestWindow\Microsoft.VisualStudio.TestPlatform.ObjectModel.dll</HintPath>
+    </Reference>
+    <Reference Include="NSubstitute, Version=1.8.2.0, Culture=neutral, PublicKeyToken=92dd2e9066daa5ca, processorArchitecture=MSIL">
+      <HintPath>..\packages\NSubstitute.1.8.2.0\lib\net45\NSubstitute.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
       <HintPath>..\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
@@ -67,8 +74,17 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestGeneratorAdapterTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AssemblyStubs\Brute.AssemblyStubs.NoTestGenerator\Brute.AssemblyStubs.NoTestGenerator.csproj">
+      <Project>{c008361b-1241-44e9-9122-e5d34678f003}</Project>
+      <Name>Brute.AssemblyStubs.NoTestGenerator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AssemblyStubs\Brute.AssemblyStubs.SingleTestGenerator\Brute.AssemblyStubs.SingleTestGenerator.csproj">
+      <Project>{f6c6c0e3-a536-4552-a576-b0bae067adf0}</Project>
+      <Name>Brute.AssemblyStubs.SingleTestGenerator</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Brute\Brute.csproj">
       <Project>{6dc6bae8-51bb-4b3a-847f-3a12e32052f1}</Project>
       <Name>Brute</Name>

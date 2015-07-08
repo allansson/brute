@@ -77,6 +77,10 @@
     <Compile Include="TestGeneratorAdapterTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AssemblyStubs\Brute.AssemblyStubs.MultipleTestGenerators\Brute.AssemblyStubs.MultipleTestGenerators.csproj">
+      <Project>{e925395c-0c85-4102-aef4-f98b080023d6}</Project>
+      <Name>Brute.AssemblyStubs.MultipleTestGenerators</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AssemblyStubs\Brute.AssemblyStubs.NoTestGenerator\Brute.AssemblyStubs.NoTestGenerator.csproj">
       <Project>{c008361b-1241-44e9-9122-e5d34678f003}</Project>
       <Name>Brute.AssemblyStubs.NoTestGenerator</Name>

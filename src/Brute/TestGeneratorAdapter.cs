@@ -25,25 +25,22 @@ namespace Brute
 
             Assembly assembly = Assembly.LoadFrom(source);
 
-            Type testGeneratorType = assembly.GetTypes()
-                .Where(t => typeof(ITestGenerator).IsAssignableFrom(t))
-                .FirstOrDefault();
+            IEnumerable<Type> testGeneratorTypes = assembly.GetTypes()
+                .Where(t => typeof(ITestGenerator).IsAssignableFrom(t));
 
-            if (testGeneratorType == null)
+            foreach (Type testGeneratorType in testGeneratorTypes)
             {
-                return;
+                ITestGenerator testGenerator = Activator.CreateInstance(testGeneratorType) as ITestGenerator;
+
+                Test test = testGenerator.Generate().FirstOrDefault();
+
+                discoverySink.SendTestCase(new TestCase(String.Format("{0}#{1}", testGeneratorType.FullName, test.Name.Replace(" ", "")), ExecutorUri, source)
+                {
+                    DisplayName = test.Name,
+                    LineNumber = test.LineNumber,
+                    CodeFilePath = test.SourceFile
+                });
             }
-
-            ITestGenerator testGenerator = Activator.CreateInstance(testGeneratorType) as ITestGenerator;
-
-            Test test = testGenerator.Generate().FirstOrDefault();
-
-            discoverySink.SendTestCase(new TestCase(String.Format("{0}#{1}", testGeneratorType.FullName, test.Name.Replace(" ", "")), ExecutorUri, source)
-            {
-                DisplayName = test.Name,
-                LineNumber = test.LineNumber,
-                CodeFilePath = test.SourceFile
-            });
         }
 
         public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)

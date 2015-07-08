@@ -1,4 +1,5 @@
-﻿using Brute.AssemblyStubs.SingleTestGenerator;
+﻿using Brute.AssemblyStubs.MultipleTestGenerators;
+using Brute.AssemblyStubs.SingleTestGenerator;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -43,6 +44,17 @@ namespace Brute.Tests
             adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll" }, discoveryContext, logger, discoverySink);
 
             discoverySink.Received(1).SendTestCase(Arg.Any<TestCase>());
+        }
+
+        [Fact]
+        public void WhenAssemblyFileInSourcesContainsMultipleImplementationsOfITestGeneratorInterface_ShouldRegisterTestCasesForEveryImplementation()
+        {
+            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
+
+            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.MultipleTestGenerators.dll" }, discoveryContext, logger, discoverySink);
+
+            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == FirstTestGenerator.TestCaseName));
+            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == SecondTestGenerator.TestCaseName));
         }
 
         [Fact]

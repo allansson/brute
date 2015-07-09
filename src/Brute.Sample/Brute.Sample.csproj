@@ -31,7 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Brute.TestAdapter, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Brute.TestAdapter.1.0.0.0\lib\net452\Brute.TestAdapter.dll</HintPath>
+      <HintPath>packages\Brute.TestAdapter.1.0.0.0\lib\net452\Brute.TestAdapter.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -48,11 +48,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>$(SolutionDir)packages\NuGet.CommandLine.2.8.5\tools\NuGet.exe pack $(SolutionDir)Brute\Brute.csproj -OutputDirectory $(SolutionDir)bin\packages</PreBuildEvent>
+    <PreBuildEvent>$(SolutionDir)\packages\NuGet.CommandLine.2.8.5\tools\NuGet.exe pack $(SolutionDir)..\Brute\Brute.csproj</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

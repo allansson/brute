@@ -15,5 +15,10 @@ namespace Brute.Sample
                 yield return new Test("Test #" + i);
             }
         }
+
+        public void Run(Test test)
+        {
+            
+        }
     }
 }

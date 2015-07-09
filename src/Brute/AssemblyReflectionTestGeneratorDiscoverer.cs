@@ -24,14 +24,15 @@ namespace Brute
                 {
                     ITestGenerator testGenerator = Activator.CreateInstance(testGeneratorType) as ITestGenerator;
 
-                    Test test = testGenerator.Generate().FirstOrDefault();
-
-                    yield return new TestCase(String.Format("{0}#{1}", testGeneratorType.FullName, test.Name.Replace(" ", "")), TestGeneratorAdapter.ExecutorUri, source)
+                    foreach (Test test in testGenerator.Generate())
                     {
-                        DisplayName = test.Name,
-                        LineNumber = test.LineNumber,
-                        CodeFilePath = test.SourceFile
-                    };
+                        yield return new TestCase(String.Format("{0}#{1}", testGeneratorType.FullName, test.Name.Replace(" ", "")), TestGeneratorAdapter.ExecutorUri, source)
+                        {
+                            DisplayName = test.Name,
+                            LineNumber = test.LineNumber,
+                            CodeFilePath = test.SourceFile
+                        };
+                    }
                 }
             }
         }

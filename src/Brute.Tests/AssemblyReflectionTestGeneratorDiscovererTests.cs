@@ -1,4 +1,5 @@
 ﻿using Brute.AssemblyStubs.MultipleTestGenerators;
+using Brute.AssemblyStubs.MultipleTestsGenerator;
 using Brute.AssemblyStubs.SingleTestGenerator;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -62,6 +63,19 @@ namespace Brute
             Assert.True(result.Any(t => t.DisplayName == SingleTestGenerator.TestCaseName));
             Assert.True(result.Any(t => t.DisplayName == FirstTestGenerator.TestCaseName));
             Assert.True(result.Any(t => t.DisplayName == SecondTestGenerator.TestCaseName));
+        }
+
+        [Fact]
+        public void WhenTestGeneratorReturnsMultipleTests_ShouldReturnTestCasesForEveryTest()
+        {
+            AssemblyReflectionTestGeneratorDiscoverer discoverer = new AssemblyReflectionTestGeneratorDiscoverer();
+
+            IEnumerable<TestCase> result = discoverer.Discover(new string[] { "Brute.AssemblyStubs.MultipleTestsGenerator.dll" }, logger);
+
+            Assert.True(result.Any(t => t.DisplayName == MultipleTestsGenerator.TestCaseName1));
+            Assert.True(result.Any(t => t.DisplayName == MultipleTestsGenerator.TestCaseName2));
+            Assert.True(result.Any(t => t.DisplayName == MultipleTestsGenerator.TestCaseName3));
+            Assert.True(result.Any(t => t.DisplayName == MultipleTestsGenerator.TestCaseName4));
         }
 
         [Fact]

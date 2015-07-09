@@ -9,5 +9,6 @@ namespace Brute
     public interface ITestGenerator
     {
         IEnumerable<Test> Generate();
+        void Run(Test test);
     }
 }

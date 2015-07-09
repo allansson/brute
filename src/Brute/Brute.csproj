@@ -48,6 +48,7 @@
     <Compile Include="ITestGeneratorDiscoverer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test.cs" />
+    <Compile Include="TestContext.cs" />
     <Compile Include="TestGeneratorAdapter.cs" />
   </ItemGroup>
   <ItemGroup>

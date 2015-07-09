@@ -21,6 +21,7 @@ namespace Brute.Tests
         private IMessageLogger logger;
         private IFrameworkHandle frameworkHandle;
         private IRunContext runContext;
+        private ITestGenerator testGenerator;
 
         public TestGeneratorAdapterTests()
         {
@@ -30,6 +31,7 @@ namespace Brute.Tests
             logger = Substitute.For<IMessageLogger>();
             frameworkHandle = Substitute.For<IFrameworkHandle>();
             runContext = Substitute.For<IRunContext>();
+            testGenerator = Substitute.For<ITestGenerator>();
         }
 
         private TestGeneratorAdapter CreateTestGeneratorAdapter()
@@ -88,9 +90,20 @@ namespace Brute.Tests
         {
             TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
 
-            TestCase testCase1 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
-            TestCase testCase2 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
-            TestCase testCase3 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
+            TestCase testCase1 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1")
+            {
+                LocalExtensionData = new TestContext(testGenerator, new Test("#1"))
+            };
+
+            TestCase testCase2 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1")
+            {
+                LocalExtensionData = new TestContext(testGenerator, new Test("#1"))
+            }; 
+
+            TestCase testCase3 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1")
+            {
+                LocalExtensionData = new TestContext(testGenerator, new Test("#1"))
+            };
 
             testGeneratorDiscoverer.Discover(Arg.Any<IEnumerable<string>>(), Arg.Any<IMessageLogger>())
                 .Returns(new TestCase[] { testCase1, testCase2, testCase3 });
@@ -98,6 +111,103 @@ namespace Brute.Tests
             adapter.RunTests(new string[] { "Some Source" }, runContext, frameworkHandle);
 
             frameworkHandle.Received(3).RecordResult(Arg.Is<TestResult>(result => result.TestCase.DisplayName == "#1"));
+        }
+
+        [Fact]
+        public void WhenTestGeneratorMethodReturnsWithoutFailure_ShouldRecordTestResultForTestCase()
+        {
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
+
+            TestCase testCase = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1")
+            {
+                LocalExtensionData = new TestContext(testGenerator, new Test("#1"))
+            };
+
+            adapter.RunTests(new TestCase[] { testCase }, runContext, frameworkHandle);
+
+            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.TestCase == testCase));
+        }
+
+        [Fact]
+        public void WhenRunningTestCase_ShouldPassTestToRunMethodOfTestGenerator()
+        {
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
+
+            Test test = new Test("Some test");
+            TestCase testCase = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1")
+            {
+                LocalExtensionData = new TestContext(testGenerator, test)
+            };
+
+            adapter.RunTests(new TestCase[] { testCase }, runContext, frameworkHandle);
+
+            testGenerator.Received(1).Run(test);
+        }
+
+        [Fact]
+        public void WhenTestGeneratorMethodReturnsWithoutFailure_ShouldRecordTestResultAsPassed()
+        {
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
+
+            TestCase testCase = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1")
+            {
+                LocalExtensionData = new TestContext(testGenerator, new Test("Some test"))
+            };
+
+            adapter.RunTests(new TestCase[] { testCase }, runContext, frameworkHandle);
+
+            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.Outcome == TestOutcome.Passed));
+        }
+
+        [Fact]
+        public void WhenTestGeneratorThrowsAnExcpetion_ShouldRecordTestResultAsFailed()
+        {
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
+
+            TestCase testCase = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1")
+            {
+                LocalExtensionData = new TestContext(testGenerator, new Test("Some test"))
+            };
+
+            testGenerator.When(g => g.Run(Arg.Any<Test>())).Do(c => { throw new Exception(); });
+
+            adapter.RunTests(new TestCase[] { testCase }, runContext, frameworkHandle);
+
+            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.Outcome == TestOutcome.Failed));
+        }
+
+        [Fact]
+        public void WhenTestGeneratorThrowsAnExcpetion_ShouldSetErrorMessageToMessageOfException()
+        {
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
+
+            TestCase testCase = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1")
+            {
+                LocalExtensionData = new TestContext(testGenerator, new Test("Some test"))
+            };
+
+            testGenerator.When(g => g.Run(Arg.Any<Test>())).Do(c => { throw new Exception("Expected message"); });
+
+            adapter.RunTests(new TestCase[] { testCase }, runContext, frameworkHandle);
+
+            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.ErrorMessage == "Expected message"));
+        }
+
+        [Fact]
+        public void WhenTestGeneratorThrowsAnExcpetion_ShouldSetErrorStackTraceOnTestResult()
+        {
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
+
+            TestCase testCase = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1")
+            {
+                LocalExtensionData = new TestContext(testGenerator, new Test("Some test"))
+            };
+
+            testGenerator.When(g => g.Run(Arg.Any<Test>())).Do(c => { throw new Exception("Expected message"); });
+
+            adapter.RunTests(new TestCase[] { testCase }, runContext, frameworkHandle);
+
+            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => !String.IsNullOrEmpty(result.ErrorStackTrace)));
         }
     }
 }

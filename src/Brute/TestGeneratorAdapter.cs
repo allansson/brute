@@ -56,7 +56,23 @@ namespace Brute
         {
             foreach(TestCase testCase in tests)
             {
-                frameworkHandle.RecordResult(new TestResult(testCase));
+                TestResult result = new TestResult(testCase);
+                TestContext context = testCase.LocalExtensionData as TestContext;
+
+                try
+                {
+                    context.Generator.Run(context.Test);
+
+                    result.Outcome = TestOutcome.Passed;
+                }
+                catch (Exception e)
+                {
+                    result.Outcome = TestOutcome.Failed;
+                    result.ErrorMessage = e.Message;
+                    result.ErrorStackTrace = e.StackTrace;
+                }
+
+                frameworkHandle.RecordResult(result);
             }   
         }
 

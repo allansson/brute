@@ -21,5 +21,10 @@ namespace Brute.AssemblyStubs.SingleTestGenerator
                 SourceFile = SourceFile,
             };
         }
+
+        public void Run(Test test)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

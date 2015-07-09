@@ -14,5 +14,10 @@ namespace Brute.AssemblyStubs.MultipleTestGenerators
         {
             yield return new Test(TestCaseName);
         }
+
+        public void Run(Test test)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

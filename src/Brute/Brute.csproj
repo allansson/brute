@@ -43,7 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyReflectionTestGeneratorDiscoverer.cs" />
     <Compile Include="ITestGenerator.cs" />
+    <Compile Include="ITestGeneratorDiscoverer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test.cs" />
     <Compile Include="TestGeneratorAdapter.cs" />

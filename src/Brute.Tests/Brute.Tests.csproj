@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestGeneratorAdapterTests.cs" />
+    <Compile Include="AssemblyReflectionTestGeneratorDiscovererTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AssemblyStubs\Brute.AssemblyStubs.MultipleTestGenerators\Brute.AssemblyStubs.MultipleTestGenerators.csproj">

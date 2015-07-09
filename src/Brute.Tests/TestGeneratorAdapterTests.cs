@@ -15,6 +15,7 @@ namespace Brute.Tests
 {
     public class TestGeneratorAdapterTests
     {
+        private ITestGeneratorDiscoverer testGeneratorDiscoverer;
         private IDiscoveryContext discoveryContext;
         private ITestCaseDiscoverySink discoverySink;
         private IMessageLogger logger;
@@ -23,6 +24,7 @@ namespace Brute.Tests
 
         public TestGeneratorAdapterTests()
         {
+            testGeneratorDiscoverer = Substitute.For<ITestGeneratorDiscoverer>();
             discoveryContext = Substitute.For<IDiscoveryContext>();
             discoverySink = Substitute.For<ITestCaseDiscoverySink>();
             logger = Substitute.For<IMessageLogger>();
@@ -30,97 +32,55 @@ namespace Brute.Tests
             runContext = Substitute.For<IRunContext>();
         }
 
-        [Fact]
-        public void WhenAssemblyFileInSourcesContainsNoImplementationOfITestGeneratorInterface_ShouldNotRegisterAnyTestCases()
+        private TestGeneratorAdapter CreateTestGeneratorAdapter()
         {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
+            return new TestGeneratorAdapter(testGeneratorDiscoverer);
+        }
+        
+        [Fact]
+        public void WhenTestGeneratorDiscovererDiscoversNoTests_ShouldNotRegisterAnyTestCases()
+        {
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
 
-            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.NoTestGenerator.dll" }, discoveryContext, logger, discoverySink);
+            testGeneratorDiscoverer.Discover(Arg.Any<IEnumerable<string>>(), Arg.Any<IMessageLogger>())
+                .Returns(new TestCase[] { });
+
+            adapter.DiscoverTests(new string[] { "Source1" }, discoveryContext, logger, discoverySink);
 
             discoverySink.Received(0).SendTestCase(Arg.Any<TestCase>());
         }
 
         [Fact]
-        public void WhenAssemblyFileInSourcesContainsSingleImplementationOfITestGeneratorInterface_ShouldRegisterTestCasesForAllTestsGenerated()
+        public void WhenTestGeneratorDiscovererDiscoversATest_ShouldRegisterTestCase()
         {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
+            TestCase testCase = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
 
-            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll" }, discoveryContext, logger, discoverySink);
+            testGeneratorDiscoverer.Discover(Arg.Any<IEnumerable<string>>(), Arg.Any<IMessageLogger>())
+                .Returns(new TestCase[] { testCase });
 
-            discoverySink.Received(1).SendTestCase(Arg.Any<TestCase>());
+            adapter.DiscoverTests(new string[] { "Source1" }, discoveryContext, logger, discoverySink);
+
+            discoverySink.Received(1).SendTestCase(testCase);
         }
 
         [Fact]
-        public void WhenAssemblyFileInSourcesContainsMultipleImplementationsOfITestGeneratorInterface_ShouldRegisterTestCasesForEveryImplementation()
+        public void WhenTestGeneratorDiscovererDiscoversMultipleTests_ShouldRegisterAllTestCases()
         {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
 
-            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.MultipleTestGenerators.dll" }, discoveryContext, logger, discoverySink);
+            TestCase testCase1 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
+            TestCase testCase2 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
+            TestCase testCase3 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
 
-            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == FirstTestGenerator.TestCaseName));
-            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == SecondTestGenerator.TestCaseName));
-        }
+            testGeneratorDiscoverer.Discover(Arg.Any<IEnumerable<string>>(), Arg.Any<IMessageLogger>())
+                .Returns(new TestCase[] { testCase1, testCase2, testCase3 });
 
-        [Fact]
-        public void WhenMultipleSourcesAreGiven_ShouldLoadTestGeneratorsFromAllSources()
-        {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
+            adapter.DiscoverTests(new string[] { "Source1" }, discoveryContext, logger, discoverySink);
 
-            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll", "Brute.AssemblyStubs.MultipleTestGenerators.dll" }, discoveryContext, logger, discoverySink);
-
-            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == SingleTestGenerator.TestCaseName));
-            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == FirstTestGenerator.TestCaseName));
-            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(t => t.DisplayName == SecondTestGenerator.TestCaseName));
-        }
-
-        [Fact]
-        public void WhenTestCaseIsRegistered_ShouldBeRegisteredWithDisplayNameGivenInTest()
-        {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
-
-            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll" }, discoveryContext, logger, discoverySink);
-
-            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(tc => tc.DisplayName == SingleTestGenerator.TestCaseName));
-        }
-
-        [Fact]
-        public void WhenTestCaseIsRegistered_ShouldBeRegisteredWithLineNumberGivenInTest()
-        {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
-
-            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll" }, discoveryContext, logger, discoverySink);
-
-            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(tc => tc.LineNumber == SingleTestGenerator.LineNumber));
-        }
-
-        [Fact]
-        public void WhenTestCaseIsRegistered_ShouldBeRegisteredWithCodeFilePathSetToSourceFileReturnedInTest()
-        {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
-
-            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll" }, discoveryContext, logger, discoverySink);
-
-            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(tc => tc.CodeFilePath == SingleTestGenerator.SourceFile));
-        }
-
-        [Fact]
-        public void WhenTestCaseIsRegistered_ShouldSetFullyQualifiedNameToFullNameOfTestGeneratorTypePlusTheTestCaseNameWithoutSpacesSeparatedByHashTag()
-        {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
-
-            adapter.DiscoverTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll" }, discoveryContext, logger, discoverySink);
-
-            discoverySink.Received(1).SendTestCase(Arg.Is<TestCase>(tc => tc.FullyQualifiedName == String.Format("{0}#{1}", typeof(SingleTestGenerator).FullName, SingleTestGenerator.TestCaseName.Replace(" ", ""))));
-        }
-
-        [Fact]
-        public void WhenSourceIsTheBruteLibrary_ShouldIgnoreITestGeneratorInterface()
-        {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
-
-            adapter.DiscoverTests(new string[] { "Brute.TestAdapter.dll" }, discoveryContext, logger, discoverySink);
-
-            discoverySink.Received(0).SendTestCase(Arg.Any<TestCase>());
+            discoverySink.Received(1).SendTestCase(testCase1);
+            discoverySink.Received(1).SendTestCase(testCase2);
+            discoverySink.Received(1).SendTestCase(testCase3);
         }
 
         [Fact]

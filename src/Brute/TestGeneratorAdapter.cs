@@ -19,6 +19,7 @@ namespace Brute
         public const string ExecutorUriString = "testexecutor://brute/generated-test";
         public static readonly Uri ExecutorUri = new Uri(ExecutorUriString);
 
+        private bool cancelled;
         private ITestGeneratorDiscoverer discoverer;
 
         public TestGeneratorAdapter()
@@ -54,8 +55,15 @@ namespace Brute
 
         public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
         {
-            foreach(TestCase testCase in tests)
+            cancelled = false;
+
+            foreach (TestCase testCase in tests)
             {
+                if (cancelled == true)
+                {
+                    break;
+                }
+
                 TestResult result = new TestResult(testCase);
                 TestContext context = testCase.LocalExtensionData as TestContext;
 
@@ -78,7 +86,7 @@ namespace Brute
 
         public void Cancel()
         {
-            
+            cancelled = true;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace Brute
 
         }
 
-        public TestGeneratorAdapter(ITestGeneratorDiscoverer discoverer)
+        internal TestGeneratorAdapter(ITestGeneratorDiscoverer discoverer)
         {
             this.discoverer = discoverer;
         }

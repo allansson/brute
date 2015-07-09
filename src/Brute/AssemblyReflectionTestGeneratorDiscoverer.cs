@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Brute
 {
-    public class AssemblyReflectionTestGeneratorDiscoverer : ITestGeneratorDiscoverer
+    internal class AssemblyReflectionTestGeneratorDiscoverer : ITestGeneratorDiscoverer
     {
         public IEnumerable<TestCase> Discover(IEnumerable<string> sources, IMessageLogger logger)
         {

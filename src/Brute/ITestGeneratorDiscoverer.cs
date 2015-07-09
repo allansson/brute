@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Brute
 {
-    public interface ITestGeneratorDiscoverer
+    internal interface ITestGeneratorDiscoverer
     {
         IEnumerable<TestCase> Discover(IEnumerable<string> sources, IMessageLogger logger);
     }

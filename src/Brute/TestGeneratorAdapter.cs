@@ -21,6 +21,26 @@ namespace Brute
 
         public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
         {
+            foreach (TestCase testCase in GenerateTestCasesForSources(sources, discoveryContext, logger))
+            {
+                discoverySink.SendTestCase(testCase);
+            }
+        }
+
+        private static bool TypeIsImplementationOfTestGeneratorInterface(Type type)
+        {
+            return !type.IsInterface && typeof(ITestGenerator).IsAssignableFrom(type);
+        }
+
+        public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
+        {
+            IEnumerable<TestCase> testCases = GenerateTestCasesForSources(sources, runContext, frameworkHandle);
+
+            RunTests(testCases, runContext, frameworkHandle);
+        }
+
+        private IEnumerable<TestCase> GenerateTestCasesForSources(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger)
+        {
             foreach (string source in sources)
             {
                 Assembly assembly = Assembly.LoadFrom(source);
@@ -34,29 +54,22 @@ namespace Brute
 
                     Test test = testGenerator.Generate().FirstOrDefault();
 
-                    discoverySink.SendTestCase(new TestCase(String.Format("{0}#{1}", testGeneratorType.FullName, test.Name.Replace(" ", "")), ExecutorUri, source)
+                    yield return new TestCase(String.Format("{0}#{1}", testGeneratorType.FullName, test.Name.Replace(" ", "")), ExecutorUri, source)
                     {
                         DisplayName = test.Name,
                         LineNumber = test.LineNumber,
                         CodeFilePath = test.SourceFile
-                    });
+                    };
                 }
             }
         }
 
-        private static bool TypeIsImplementationOfTestGeneratorInterface(Type type)
-        {
-            return !type.IsInterface && typeof(ITestGenerator).IsAssignableFrom(type);
-        }
-
-        public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
-        {
-            
-        }
-
         public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
         {
-            
+            foreach(TestCase testCase in tests)
+            {
+                frameworkHandle.RecordResult(new TestResult(testCase));
+            }   
         }
 
         public void Cancel()

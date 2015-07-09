@@ -18,12 +18,16 @@ namespace Brute.Tests
         private IDiscoveryContext discoveryContext;
         private ITestCaseDiscoverySink discoverySink;
         private IMessageLogger logger;
+        private IFrameworkHandle frameworkHandle;
+        private IRunContext runContext;
 
         public TestGeneratorAdapterTests()
         {
             discoveryContext = Substitute.For<IDiscoveryContext>();
             discoverySink = Substitute.For<ITestCaseDiscoverySink>();
             logger = Substitute.For<IMessageLogger>();
+            frameworkHandle = Substitute.For<IFrameworkHandle>();
+            runContext = Substitute.For<IRunContext>();
         }
 
         [Fact]
@@ -117,6 +121,18 @@ namespace Brute.Tests
             adapter.DiscoverTests(new string[] { "Brute.TestAdapter.dll" }, discoveryContext, logger, discoverySink);
 
             discoverySink.Received(0).SendTestCase(Arg.Any<TestCase>());
+        }
+
+        [Fact]
+        public void WhenRunningTestsProvidingAssemblySources_ShouldDiscoverAndRunTestsInAssembly()
+        {
+            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
+
+            adapter.RunTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll", "Brute.AssemblyStubs.MultipleTestGenerators.dll" }, runContext, frameworkHandle);
+
+            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.TestCase.DisplayName == SingleTestGenerator.TestCaseName));
+            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.TestCase.DisplayName == FirstTestGenerator.TestCaseName));
+            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.TestCase.DisplayName == SecondTestGenerator.TestCaseName));
         }
     }
 }

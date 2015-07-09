@@ -86,13 +86,18 @@ namespace Brute.Tests
         [Fact]
         public void WhenRunningTestsProvidingAssemblySources_ShouldDiscoverAndRunTestsInAssembly()
         {
-            TestGeneratorAdapter adapter = new TestGeneratorAdapter();
+            TestGeneratorAdapter adapter = CreateTestGeneratorAdapter();
 
-            adapter.RunTests(new string[] { "Brute.AssemblyStubs.SingleTestGenerator.dll", "Brute.AssemblyStubs.MultipleTestGenerators.dll" }, runContext, frameworkHandle);
+            TestCase testCase1 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
+            TestCase testCase2 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
+            TestCase testCase3 = new TestCase("#1", TestGeneratorAdapter.ExecutorUri, "Source1");
 
-            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.TestCase.DisplayName == SingleTestGenerator.TestCaseName));
-            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.TestCase.DisplayName == FirstTestGenerator.TestCaseName));
-            frameworkHandle.Received(1).RecordResult(Arg.Is<TestResult>(result => result.TestCase.DisplayName == SecondTestGenerator.TestCaseName));
+            testGeneratorDiscoverer.Discover(Arg.Any<IEnumerable<string>>(), Arg.Any<IMessageLogger>())
+                .Returns(new TestCase[] { testCase1, testCase2, testCase3 });
+
+            adapter.RunTests(new string[] { "Some Source" }, runContext, frameworkHandle);
+
+            frameworkHandle.Received(3).RecordResult(Arg.Is<TestResult>(result => result.TestCase.DisplayName == "#1"));
         }
     }
 }
